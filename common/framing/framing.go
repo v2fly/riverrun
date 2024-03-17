@@ -156,6 +156,8 @@ type BaseDecoder struct {
 	ReceiveBuffer        *bytes.Buffer
 	ReceiveDecodedBuffer *bytes.Buffer
 	readBuffer           []byte
+
+	logger log.Logger
 }
 
 func (decoder *BaseDecoder) InitBuffers() {
@@ -263,9 +265,9 @@ func (decoder *BaseDecoder) Decode(data []byte, frames *bytes.Buffer) (int, erro
 			return 0, err
 		}
 		lengthMask := decoder.Drbg.NextBlock()
-		log.Debugf("length (raw): %d, length (mask): %d", length, lengthMask)
+		decoder.logger.Debugf("length (raw): %d, length (mask): %d", length, lengthMask)
 		length ^= binary.BigEndian.Uint16(lengthMask)
-		log.Debugf("First nextLength: %d", length)
+		decoder.logger.Debugf("First nextLength: %d", length)
 		if MaximumSegmentLength-int(decoder.LengthLength) < int(length) || decoder.MinPayloadLength > int(length) {
 			// Per "Plaintext Recovery Attacks Against SSH" by
 			// Martin R. Albrecht, Kenneth G. Paterson and Gaven J. Watson,
@@ -277,11 +279,11 @@ func (decoder *BaseDecoder) Decode(data []byte, frames *bytes.Buffer) (int, erro
 			// by pretending that the length was a random valid range as per
 			// the countermeasure suggested by Denis Bider in section 6 of the
 			// paper.
-			log.Debugf("Bad length")
+			decoder.logger.Debugf("Bad length")
 			decoder.NextLengthInvalid = true
 			length = uint16(csrand.IntRange(decoder.MinPayloadLength, MaximumSegmentLength-int(decoder.LengthLength)))
 		}
-		log.Debugf("Out nextLength: %d", length)
+		decoder.logger.Debugf("Out nextLength: %d", length)
 		decoder.NextLength = length
 	}
 

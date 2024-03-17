@@ -228,7 +228,7 @@ func (encoder *riverrunEncoder) processLength(length uint16) ([]byte, error) {
 	lengthBytes := make([]byte, f.LengthLength)
 	binary.BigEndian.PutUint16(lengthBytes[:], length)
 	lengthBytesEncoded := make([]byte, encoder.LengthLength)
-	err := ctstretch.ExpandBytes(lengthBytes[:], lengthBytesEncoded, encoder.compressedBlockBits, encoder.expandedBlockBits, encoder.table16, encoder.table8, encoder.writeStream, rand.Int())
+	err := ctstretch.ExpandBytes(lengthBytes[:], lengthBytesEncoded, encoder.compressedBlockBits, encoder.expandedBlockBits, encoder.table16, encoder.table8, encoder.writeStream, rand.Int(), encoder.logger)
 	return lengthBytesEncoded, err
 }
 
@@ -237,7 +237,7 @@ func (encoder *riverrunEncoder) encode(frame, payload []byte) (n int, err error)
 	expandedNBytes := int(ctstretch.ExpandedNBytes(uint64(len(payload)), encoder.compressedBlockBits, encoder.expandedBlockBits))
 	frameLen := encoder.LengthLength + expandedNBytes
 	encoder.logger.Debugf("Encoding frame of length %d, with payload of length %d. TB: %d", frameLen, expandedNBytes, tb)
-	err = ctstretch.ExpandBytes(payload[:], frame, encoder.compressedBlockBits, encoder.expandedBlockBits, encoder.table16, encoder.table8, encoder.writeStream, tb)
+	err = ctstretch.ExpandBytes(payload[:], frame, encoder.compressedBlockBits, encoder.expandedBlockBits, encoder.table16, encoder.table8, encoder.writeStream, tb, encoder.logger)
 	if err != nil {
 		return 0, err
 	}
@@ -341,7 +341,7 @@ func (decoder *riverrunDecoder) decodePayload(frames *bytes.Buffer) ([]byte, err
 }
 
 func (decoder *riverrunDecoder) compressBytes(raw, res []byte) error {
-	return ctstretch.CompressBytes(raw, res, decoder.expandedBlockBits, decoder.compressedBlockBits, decoder.revTable16, decoder.revTable8, decoder.readStream, rand.Int())
+	return ctstretch.CompressBytes(raw, res, decoder.expandedBlockBits, decoder.compressedBlockBits, decoder.revTable16, decoder.revTable8, decoder.readStream, rand.Int(), decoder.logger)
 }
 
 func (rr *Conn) nextLength() int {
