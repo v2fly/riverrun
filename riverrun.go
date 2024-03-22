@@ -201,6 +201,7 @@ func (decoder *riverrunDecoder) payloadOverhead(payloadLen int) int {
 
 func newRiverrunEncoder(key []byte, writeStream cipher.Stream, table8, table16 []uint64, compressedBlockBits, expandedBlockBits uint64, logger log.Logger) *riverrunEncoder {
 	encoder := new(riverrunEncoder)
+	encoder.logger = logger
 
 	encoder.Drbg = f.GenDrbg(key[:])
 	encoder.MaxPacketPayloadLength = int(ctstretch.CompressedNBytes_floor(f.MaximumSegmentLength-ctstretch.ExpandedNBytes(uint64(f.LengthLength), compressedBlockBits, expandedBlockBits), expandedBlockBits, compressedBlockBits))
@@ -218,8 +219,6 @@ func newRiverrunEncoder(key []byte, writeStream cipher.Stream, table8, table16 [
 	encoder.expandedBlockBits = expandedBlockBits
 
 	encoder.Type = "rr"
-
-	encoder.logger = logger
 
 	return encoder
 }
@@ -266,6 +265,7 @@ type riverrunDecoder struct {
 
 func newRiverrunDecoder(key []byte, readStream cipher.Stream, revTable8, revTable16 map[uint64]uint64, compressedBlockBits, expandedBlockBits uint64, logger log.Logger) *riverrunDecoder {
 	decoder := new(riverrunDecoder)
+	decoder.logger = logger
 
 	decoder.Drbg = f.GenDrbg(key[:])
 	decoder.LengthLength = int(ctstretch.ExpandedNBytes(uint64(f.LengthLength), compressedBlockBits, expandedBlockBits))
@@ -291,7 +291,6 @@ func newRiverrunDecoder(key []byte, readStream cipher.Stream, revTable8, revTabl
 	decoder.compressedBlockBits = compressedBlockBits
 	decoder.expandedBlockBits = expandedBlockBits
 
-	decoder.logger = logger
 	return decoder
 }
 
