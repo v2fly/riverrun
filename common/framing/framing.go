@@ -160,6 +160,10 @@ type BaseDecoder struct {
 	logger log.Logger
 }
 
+func (decoder *BaseDecoder) SetLogger(logger log.Logger) {
+	decoder.logger = logger
+}
+
 func (decoder *BaseDecoder) InitBuffers() {
 	decoder.ReceiveBuffer = bytes.NewBuffer(nil)
 	decoder.ReceiveDecodedBuffer = bytes.NewBuffer(nil)

@@ -266,6 +266,7 @@ type riverrunDecoder struct {
 func newRiverrunDecoder(key []byte, readStream cipher.Stream, revTable8, revTable16 map[uint64]uint64, compressedBlockBits, expandedBlockBits uint64, logger log.Logger) *riverrunDecoder {
 	decoder := new(riverrunDecoder)
 	decoder.logger = logger
+	decoder.BaseDecoder.SetLogger(logger)
 
 	decoder.Drbg = f.GenDrbg(key[:])
 	decoder.LengthLength = int(ctstretch.ExpandedNBytes(uint64(f.LengthLength), compressedBlockBits, expandedBlockBits))
